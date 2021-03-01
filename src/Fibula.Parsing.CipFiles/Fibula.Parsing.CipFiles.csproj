@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fibula.Definitions" Version="1.0.0" />
+    <PackageReference Include="Fibula.Definitions" Version="1.0.1" />
     <PackageReference Include="Fibula.Parsing.Contracts" Version="1.1.1" />
     <PackageReference Include="Sprache" Version="2.3.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
