@@ -11,8 +11,14 @@
 
 namespace Fibula.Parsing.CipFiles
 {
+    using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
+    using Fibula.Definitions.Enumerations;
+    using Fibula.Definitions.Flags;
+    using Fibula.Parsing.CipFiles.Enumerations;
+    using Fibula.Parsing.CipFiles.Extensions;
     using Fibula.Parsing.CipFiles.Models;
     using Fibula.Parsing.Contracts.Abstractions;
     using Fibula.Utilities.Common.Extensions;
@@ -125,7 +131,7 @@ namespace Fibula.Parsing.CipFiles
         /// </summary>
         /// <param name="spellsStr">The string to parse.</param>
         /// <returns>A collection of data containing the spell conditions, effects and an asociated chance.</returns>
-        public static IEnumerable<(IEnumerable<string> conditions, IEnumerable<string> effects, string chance)> ParseMonsterSpells(string spellsStr)
+        public static IEnumerable<(CipMonsterSpellCastCondition condition, CipMonsterSpellEffect effects, byte chance)> ParseMonsterSpells(string spellsStr)
         {
             return CipGrammar.MonsterSpellRules.Parse(spellsStr);
         }
@@ -145,7 +151,7 @@ namespace Fibula.Parsing.CipFiles
         /// </summary>
         /// <param name="skillsStr">The string to parse.</param>
         /// <returns>A collection of tuples containing the skills information.</returns>
-        public static IEnumerable<(string Name, int DefaultLevel, int CurrentLevel, int MaximumLevel, uint TargetCount, uint CountIncreaseFactor, byte IncreaserPerLevel)> ParseMonsterSkills(string skillsStr)
+        public static IEnumerable<(string, ushort, ushort, ushort, uint, uint, byte)> ParseMonsterSkills(string skillsStr)
         {
             return CipGrammar.MonsterSkills.Parse(skillsStr);
         }
@@ -212,6 +218,177 @@ namespace Fibula.Parsing.CipFiles
             }
 
             return attribute;
+        }
+
+        /// <summary>
+        /// Reads a <see cref="CipMonster"/> model out of a monster file.
+        /// </summary>
+        /// <param name="monsterFileInfo">The information about the monster file.</param>
+        /// <returns>The <see cref="CipMonster"/> model loaded.</returns>
+        private static CipMonster ParseMonsterFile(FileInfo monsterFileInfo)
+        {
+            monsterFileInfo.ThrowIfNull(nameof(monsterFileInfo));
+
+            if (!monsterFileInfo.Exists)
+            {
+                return null;
+            }
+
+            var monsterModel = new CipMonster();
+
+            foreach ((string name, string value) in BreakMonsterFileInDataTuples(File.ReadLines(monsterFileInfo.FullName)))
+            {
+                switch (name)
+                {
+                    case "racenumber":
+                        monsterModel.RaceId = Convert.ToUInt32(value);
+                        break;
+                    case "name":
+                        monsterModel.Name = value;
+                        break;
+                    case "article":
+                        monsterModel.Article = value;
+                        break;
+                    case "outfit":
+                        var (lookTypeId, headColor, bodyColor, legsColor, feetColor) = CipFileParser.ParseMonsterOutfit(value);
+
+                        monsterModel.Outfit = new CipOutfit()
+                        {
+                            Type = lookTypeId == 0 ? CipOutfitType.Invisible :
+                                   headColor + bodyColor + legsColor + feetColor == 0 ? CipOutfitType.Race :
+                                   CipOutfitType.Outfit,
+                            Values = new int[] { lookTypeId, headColor, bodyColor, legsColor, feetColor },
+                        };
+                        break;
+                    case "corpse":
+                        monsterModel.Corpse = Convert.ToUInt16(value);
+                        break;
+                    case "blood":
+                        if (Enum.TryParse(value, out BloodType bloodType))
+                        {
+                            monsterModel.BloodType = bloodType;
+                        }
+
+                        break;
+                    case "experience":
+                        monsterModel.Experience = Convert.ToUInt32(value);
+                        break;
+                    case "summoncost":
+                        monsterModel.SummonCost = Convert.ToUInt16(value);
+                        break;
+                    case "fleethreshold":
+                        monsterModel.FleeThreshold = Convert.ToUInt16(value);
+                        break;
+                    case "attack":
+                        monsterModel.Attack = Convert.ToUInt16(value);
+                        break;
+                    case "defend":
+                        monsterModel.Defense = Convert.ToUInt16(value);
+                        break;
+                    case "armor":
+                        monsterModel.Armor = Convert.ToUInt16(value);
+                        break;
+                    case "poison":
+                        // monsterType.SetConditionInfect(ConditionType.Posioned, Convert.ToUInt16(value));
+                        break;
+                    case "losetarget":
+                        monsterModel.LoseTarget = Convert.ToByte(value);
+                        break;
+                    case "strategy":
+                        monsterModel.Strategy = CipFileParser.ParseMonsterStrategy(value);
+                        break;
+                    case "flags":
+                        var parsedElements = CipFileParser.Parse(value);
+
+                        foreach (var element in parsedElements)
+                        {
+                            if (!element.IsFlag || element.Attributes == null || !element.Attributes.Any())
+                            {
+                                continue;
+                            }
+
+                            if (Enum.TryParse(element.Attributes.First().Name, out CipCreatureFlag flagMatch))
+                            {
+                                monsterModel.Flags.Add(flagMatch);
+                            }
+                        }
+
+                        break;
+                    case "skills":
+                        monsterModel.Skills = CipFileParser.ParseMonsterSkills(value).ToList();
+
+                        break;
+                    case "spells":
+                        monsterModel.Spells = CipFileParser.ParseMonsterSpells(value).ToList();
+
+                        break;
+                    case "inventory":
+                        monsterModel.Inventory = CipFileParser.ParseMonsterInventory(value).ToList();
+
+                        break;
+                    case "talk":
+                        monsterModel.Phrases = CipFileParser.ParsePhrases(value).ToList();
+
+                        break;
+                }
+            }
+
+            return monsterModel;
+        }
+
+        /// <summary>
+        /// Reads data out of multiple lines in the input files.
+        /// </summary>
+        /// <param name="fileLines">The file's lines.</param>
+        /// <returns>A collection of mappings of properties names to values.</returns>
+        private static IEnumerable<(string propName, string propValue)> BreakMonsterFileInDataTuples(IEnumerable<string> fileLines)
+        {
+            fileLines.ThrowIfNull(nameof(fileLines));
+
+            const char CommentSymbol = '#';
+            const char PropertyValueSeparator = '=';
+
+            var propName = string.Empty;
+            var propData = string.Empty;
+
+            foreach (var readLine in fileLines)
+            {
+                var inLine = readLine.TrimStart();
+
+                // ignore comments and empty lines.
+                if (string.IsNullOrWhiteSpace(inLine) || inLine.StartsWith(CommentSymbol))
+                {
+                    continue;
+                }
+
+                var data = inLine.Split(new[] { PropertyValueSeparator }, 2);
+
+                if (data.Length > 2)
+                {
+                    throw new InvalidDataException($"Malformed line [{inLine}] in monster file.");
+                }
+
+                if (data.Length == 1)
+                {
+                    // line is a continuation of the last prop.
+                    propData += data[0].Trim();
+                }
+                else
+                {
+                    if (propName.Length > 0 && propData.Length > 0)
+                    {
+                        yield return (propName, propData);
+                    }
+
+                    propName = data[0].ToLower().Trim();
+                    propData = data[1].Trim();
+                }
+            }
+
+            if (propName.Length > 0 && propData.Length > 0)
+            {
+                yield return (propName, propData);
+            }
         }
     }
 }

@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>full</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <OutputPath>..\..\bin\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,7 +20,7 @@
     <PackageProjectUrl>https://fibula-mmo.github.io/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Fibula-MMO/fibula-parsing-cip</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <NeutralLanguage>en</NeutralLanguage>
     <Description>The parsing implementations for original Cip files.</Description>
   </PropertyGroup>

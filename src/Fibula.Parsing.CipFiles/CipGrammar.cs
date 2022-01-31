@@ -14,6 +14,8 @@ namespace Fibula.Parsing.CipFiles
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Fibula.Parsing.CipFiles.Enumerations;
+    using Fibula.Parsing.CipFiles.Models;
     using Fibula.Parsing.Contracts;
     using Sprache;
 
@@ -249,19 +251,43 @@ namespace Fibula.Parsing.CipFiles
         //    select new ParsedEventRule(conditions, actions);
 
         /// <summary>
+        /// Parses a cast condition in a monster spell rule.
+        /// </summary>
+        public static readonly Parser<CipMonsterSpellCastCondition> MonsterSpellCondition =
+            from castType in Text
+            from values in Arguments
+            select new CipMonsterSpellCastCondition()
+            {
+                Type = Enum.Parse<CipMonsterSpellCastType>(castType, true),
+                Values = values.Select(v => Convert.ToUInt32(v)).ToArray(),
+            };
+
+        /// <summary>
+        /// Parses a cast condition in a monster spell rule.
+        /// </summary>
+        public static readonly Parser<CipMonsterSpellEffect> MonsterSpellEffect =
+            from castType in Text
+            from values in Arguments
+            select new CipMonsterSpellEffect()
+            {
+                Type = Enum.Parse<CipMonsterSpellEffectType>(castType, true),
+                Values = values.Select(v => Convert.ToUInt32(v)).ToArray(),
+            };
+
+        /// <summary>
         /// Parses monster spells.
         /// </summary>
-        public static readonly Parser<(IEnumerable<string> conditions, IEnumerable<string> effects, string chance)> MonsterSpellRule =
-            from spellCondition in Conditions
+        public static readonly Parser<(CipMonsterSpellCastCondition condition, CipMonsterSpellEffect effect, byte chance)> MonsterSpellRule =
+            from spellCondition in MonsterSpellCondition
             from lws in Parse.WhiteSpace.Optional().Many()
             from separator in ConditionsActionsSeparator
             from tws in Parse.WhiteSpace.Optional().Many()
-            from spellEffect in Actions
+            from spellEffect in MonsterSpellEffect
             from lws2 in Parse.WhiteSpace.Optional().Many()
             from chanceSeparator in Colon
             from tws2 in Parse.WhiteSpace.Optional().Many()
             from chance in Parse.Number
-            select (spellCondition, spellEffect, chance);
+            select (spellCondition, spellEffect, Convert.ToByte(chance));
 
         /// <summary>
         /// The outfit lookType for the normal outfit.
@@ -301,7 +327,7 @@ namespace Fibula.Parsing.CipFiles
         /// <summary>
         /// Parses monster spells.
         /// </summary>
-        public static readonly Parser<IEnumerable<(IEnumerable<string> conditions, IEnumerable<string> effects, string chance)>> MonsterSpellRules =
+        public static readonly Parser<IEnumerable<(CipMonsterSpellCastCondition condition, CipMonsterSpellEffect effect, byte chance)>> MonsterSpellRules =
             from open in OpenCurly
             from spells in MonsterSpellRule.DelimitedBy(Comma)
             from close in CloseCurly
@@ -350,14 +376,14 @@ namespace Fibula.Parsing.CipFiles
         /// <summary>
         /// Parses monster skill entries, in the form (skillName, currentLevel, minimumLevel, maximumLevel, currentCount, countForNextLevel, addOnLevel).
         /// </summary>
-        public static readonly Parser<(string, int, int, int, uint, uint, byte)> MonsterSkillEntry =
+        public static readonly Parser<(string, ushort, ushort, ushort, uint, uint, byte)> MonsterSkillEntry =
             from open in OpenParenthesis
             from content in OneOrMoreArguments
             from close in CloseParenthesis
             select (content.ElementAt(0),
-                Convert.ToInt32(content.ElementAt(1)),
-                Convert.ToInt32(content.ElementAt(2)),
-                Convert.ToInt32(content.ElementAt(3)),
+                Convert.ToUInt16(content.ElementAt(1)),
+                Convert.ToUInt16(content.ElementAt(2)),
+                Convert.ToUInt16(content.ElementAt(3)),
                 Convert.ToUInt32(content.ElementAt(4)),
                 Convert.ToUInt32(content.ElementAt(5)),
                 Convert.ToByte(content.ElementAt(6)));
@@ -365,7 +391,7 @@ namespace Fibula.Parsing.CipFiles
         /// <summary>
         /// Parses a monster's skills.
         /// </summary>
-        public static readonly Parser<IEnumerable<(string, int, int, int, uint, uint, byte)>> MonsterSkills =
+        public static readonly Parser<IEnumerable<(string, ushort, ushort, ushort, uint, uint, byte)>> MonsterSkills =
             from open in OpenCurly
             from skillEntries in MonsterSkillEntry.DelimitedBy(Comma)
             from close in CloseCurly
