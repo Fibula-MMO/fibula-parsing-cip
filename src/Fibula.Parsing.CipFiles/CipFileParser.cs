@@ -16,9 +16,7 @@ namespace Fibula.Parsing.CipFiles
     using System.IO;
     using System.Linq;
     using Fibula.Definitions.Enumerations;
-    using Fibula.Definitions.Flags;
     using Fibula.Parsing.CipFiles.Enumerations;
-    using Fibula.Parsing.CipFiles.Extensions;
     using Fibula.Parsing.CipFiles.Models;
     using Fibula.Parsing.Contracts.Abstractions;
     using Fibula.Utilities.Common.Extensions;
@@ -117,115 +115,11 @@ namespace Fibula.Parsing.CipFiles
         }
 
         /// <summary>
-        /// Parses a monster outfit out of a string.
-        /// </summary>
-        /// <param name="outfitStr">The string to parse.</param>
-        /// <returns>A tuple containing the monster outfit values.</returns>
-        public static (ushort lookTypeId, byte headColor, byte bodyColor, byte legsColor, byte feetColor) ParseMonsterOutfit(string outfitStr)
-        {
-            return CipGrammar.MonsterOutfit.Parse(outfitStr);
-        }
-
-        /// <summary>
-        /// Parses monster spells out of a string.
-        /// </summary>
-        /// <param name="spellsStr">The string to parse.</param>
-        /// <returns>A collection of data containing the spell conditions, effects and an asociated chance.</returns>
-        public static IEnumerable<(CipMonsterSpellCastCondition condition, CipMonsterSpellEffect effects, byte chance)> ParseMonsterSpells(string spellsStr)
-        {
-            return CipGrammar.MonsterSpellRules.Parse(spellsStr);
-        }
-
-        /// <summary>
-        /// Parses a monster's possible inventory items out of a string.
-        /// </summary>
-        /// <param name="inventoryStr">The string to parse.</param>
-        /// <returns>A collection of tuples containing the possible inventory items of the monster.</returns>
-        public static IEnumerable<(ushort typeId, byte maxAmount, ushort dropChance)> ParseMonsterInventory(string inventoryStr)
-        {
-            return CipGrammar.MonsterInventory.Parse(inventoryStr);
-        }
-
-        /// <summary>
-        /// Parses a monster's skills out of a string.
-        /// </summary>
-        /// <param name="skillsStr">The string to parse.</param>
-        /// <returns>A collection of tuples containing the skills information.</returns>
-        public static IEnumerable<(string, ushort, ushort, ushort, uint, uint, byte)> ParseMonsterSkills(string skillsStr)
-        {
-            return CipGrammar.MonsterSkills.Parse(skillsStr);
-        }
-
-        /// <summary>
-        /// Parses a monster's strategy values out of a string.
-        /// </summary>
-        /// <param name="strategyStr">The string to parse.</param>
-        /// <returns>A tuple containing the monster strategy chances.</returns>
-        public static (byte closest, byte lowestHp, byte mostDmgDealt, byte random) ParseMonsterStrategy(string strategyStr)
-        {
-            return CipGrammar.MonsterStrategy.Parse(strategyStr);
-        }
-
-        /// <summary>
-        /// Parses a creature's phrases out of a string.
-        /// </summary>
-        /// <param name="phrasesStr">The string to parse.</param>
-        /// <returns>A collection of strings, the phrases of the creature.</returns>
-        public static IEnumerable<string> ParsePhrases(string phrasesStr)
-        {
-            return CipGrammar.CreaturePhrases.Parse(phrasesStr);
-        }
-
-        /// <summary>
-        /// Parses an element string value into a <see cref="CipElement"/>.
-        /// </summary>
-        /// <param name="elementStr">The element string.</param>
-        /// <returns>The new instance of <see cref="CipElement"/>.</returns>
-        private static CipElement ParseElement(string elementStr)
-        {
-            elementStr.ThrowIfNullOrWhiteSpace(nameof(elementStr));
-
-            var attrs = elementStr.SplitByToken();
-            var attributesList = attrs as IList<string> ?? attrs.ToList();
-            var hasIdData = int.TryParse(attributesList.FirstOrDefault(), out int intValue);
-
-            IList<IParsedAttribute> attributes = attributesList.Skip(hasIdData ? 1 : 0).Select(ParseAttribute).ToList();
-
-            var element = new CipElement(hasIdData ? intValue : -1, attributes);
-
-            return element;
-        }
-
-        /// <summary>
-        /// Parses an attribute string value into a <see cref="IParsedAttribute"/>.
-        /// </summary>
-        /// <param name="attributeStr">The attribute string.</param>
-        /// <returns>The new instance of <see cref="IParsedAttribute"/>.</returns>
-        private static IParsedAttribute ParseAttribute(string attributeStr)
-        {
-            IParsedAttribute attribute = new CipAttribute();
-
-            var sections = attributeStr.Split(new[] { EqualsSign }, 2);
-
-            if (sections.Length < 2)
-            {
-                attribute.Name = sections[0].EndsWith(EqualsSign) ? sections[0][0..^1] : sections[0];
-            }
-            else
-            {
-                attribute.Name = sections[0];
-                attribute.Value = int.TryParse(sections[1], out int numericValue) ? (object)numericValue : sections[1];
-            }
-
-            return attribute;
-        }
-
-        /// <summary>
         /// Reads a <see cref="CipMonster"/> model out of a monster file.
         /// </summary>
         /// <param name="monsterFileInfo">The information about the monster file.</param>
         /// <returns>The <see cref="CipMonster"/> model loaded.</returns>
-        private static CipMonster ParseMonsterFile(FileInfo monsterFileInfo)
+        public static CipMonster ParseMonsterFile(FileInfo monsterFileInfo)
         {
             monsterFileInfo.ThrowIfNull(nameof(monsterFileInfo));
 
@@ -334,6 +228,110 @@ namespace Fibula.Parsing.CipFiles
             }
 
             return monsterModel;
+        }
+
+        /// <summary>
+        /// Parses a monster outfit out of a string.
+        /// </summary>
+        /// <param name="outfitStr">The string to parse.</param>
+        /// <returns>A tuple containing the monster outfit values.</returns>
+        public static (ushort lookTypeId, byte headColor, byte bodyColor, byte legsColor, byte feetColor) ParseMonsterOutfit(string outfitStr)
+        {
+            return CipGrammar.MonsterOutfit.Parse(outfitStr);
+        }
+
+        /// <summary>
+        /// Parses monster spells out of a string.
+        /// </summary>
+        /// <param name="spellsStr">The string to parse.</param>
+        /// <returns>A collection of data containing the spell conditions, effects and an asociated chance.</returns>
+        public static IEnumerable<(CipMonsterSpellCastCondition condition, CipMonsterSpellEffect effects, byte chance)> ParseMonsterSpells(string spellsStr)
+        {
+            return CipGrammar.MonsterSpellRules.Parse(spellsStr);
+        }
+
+        /// <summary>
+        /// Parses a monster's possible inventory items out of a string.
+        /// </summary>
+        /// <param name="inventoryStr">The string to parse.</param>
+        /// <returns>A collection of tuples containing the possible inventory items of the monster.</returns>
+        public static IEnumerable<(ushort typeId, byte maxAmount, ushort dropChance)> ParseMonsterInventory(string inventoryStr)
+        {
+            return CipGrammar.MonsterInventory.Parse(inventoryStr);
+        }
+
+        /// <summary>
+        /// Parses a monster's skills out of a string.
+        /// </summary>
+        /// <param name="skillsStr">The string to parse.</param>
+        /// <returns>A collection of tuples containing the skills information.</returns>
+        public static IEnumerable<(string, ushort, ushort, ushort, uint, uint, byte)> ParseMonsterSkills(string skillsStr)
+        {
+            return CipGrammar.MonsterSkills.Parse(skillsStr);
+        }
+
+        /// <summary>
+        /// Parses a monster's strategy values out of a string.
+        /// </summary>
+        /// <param name="strategyStr">The string to parse.</param>
+        /// <returns>A tuple containing the monster strategy chances.</returns>
+        public static (byte closest, byte lowestHp, byte mostDmgDealt, byte random) ParseMonsterStrategy(string strategyStr)
+        {
+            return CipGrammar.MonsterStrategy.Parse(strategyStr);
+        }
+
+        /// <summary>
+        /// Parses a creature's phrases out of a string.
+        /// </summary>
+        /// <param name="phrasesStr">The string to parse.</param>
+        /// <returns>A collection of strings, the phrases of the creature.</returns>
+        public static IEnumerable<string> ParsePhrases(string phrasesStr)
+        {
+            return CipGrammar.CreaturePhrases.Parse(phrasesStr);
+        }
+
+        /// <summary>
+        /// Parses an element string value into a <see cref="CipElement"/>.
+        /// </summary>
+        /// <param name="elementStr">The element string.</param>
+        /// <returns>The new instance of <see cref="CipElement"/>.</returns>
+        private static CipElement ParseElement(string elementStr)
+        {
+            elementStr.ThrowIfNullOrWhiteSpace(nameof(elementStr));
+
+            var attrs = elementStr.SplitByToken();
+            var attributesList = attrs as IList<string> ?? attrs.ToList();
+            var hasIdData = int.TryParse(attributesList.FirstOrDefault(), out int intValue);
+
+            IList<IParsedAttribute> attributes = attributesList.Skip(hasIdData ? 1 : 0).Select(ParseAttribute).ToList();
+
+            var element = new CipElement(hasIdData ? intValue : -1, attributes);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Parses an attribute string value into a <see cref="IParsedAttribute"/>.
+        /// </summary>
+        /// <param name="attributeStr">The attribute string.</param>
+        /// <returns>The new instance of <see cref="IParsedAttribute"/>.</returns>
+        private static IParsedAttribute ParseAttribute(string attributeStr)
+        {
+            IParsedAttribute attribute = new CipAttribute();
+
+            var sections = attributeStr.Split(new[] { EqualsSign }, 2);
+
+            if (sections.Length < 2)
+            {
+                attribute.Name = sections[0].EndsWith(EqualsSign) ? sections[0][0..^1] : sections[0];
+            }
+            else
+            {
+                attribute.Name = sections[0];
+                attribute.Value = int.TryParse(sections[1], out int numericValue) ? (object)numericValue : sections[1];
+            }
+
+            return attribute;
         }
 
         /// <summary>
