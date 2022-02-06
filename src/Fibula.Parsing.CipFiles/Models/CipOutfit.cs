@@ -24,8 +24,28 @@ namespace Fibula.Parsing.CipFiles.Models
         public CipOutfitType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the values that compose this outfit.
+        /// Gets or sets this outfit's id.
         /// </summary>
-        public int[] Values { get; set; }
+        public ushort Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets this outfit's head value.
+        /// </summary>
+        public byte Head { get; set; }
+
+        /// <summary>
+        /// Gets or sets this outfit's body value.
+        /// </summary>
+        public byte Body { get; set; }
+
+        /// <summary>
+        /// Gets or sets this outfit's legs value.
+        /// </summary>
+        public byte Legs { get; set; }
+
+        /// <summary>
+        /// Gets or sets this outfit's feet value.
+        /// </summary>
+        public byte Feet { get; set; }
     }
 }

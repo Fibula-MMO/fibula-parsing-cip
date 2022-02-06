@@ -27,6 +27,6 @@ namespace Fibula.Parsing.CipFiles.Models
         /// <summary>
         /// Gets or sets the values for the cast condition.
         /// </summary>
-        public IEnumerable<uint> Values { get; set; }
+        public IEnumerable<long> Values { get; set; }
     }
 }

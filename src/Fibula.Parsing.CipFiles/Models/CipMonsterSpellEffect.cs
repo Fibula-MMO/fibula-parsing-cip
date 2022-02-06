@@ -11,7 +11,6 @@
 
 namespace Fibula.Parsing.CipFiles.Models
 {
-    using System.Collections.Generic;
     using Fibula.Parsing.CipFiles.Enumerations;
 
     /// <summary>
@@ -27,6 +26,11 @@ namespace Fibula.Parsing.CipFiles.Models
         /// <summary>
         /// Gets or sets the values for the effect.
         /// </summary>
-        public IEnumerable<uint> Values { get; set; }
+        public long[] Values { get; set; }
+
+        /// <summary>
+        /// Gets or sets the outfit to change to as part of this effect.
+        /// </summary>
+        public CipOutfit ChangeToOutfit { get; set; }
     }
 }

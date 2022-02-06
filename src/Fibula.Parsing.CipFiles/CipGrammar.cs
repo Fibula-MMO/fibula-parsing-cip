@@ -14,6 +14,7 @@ namespace Fibula.Parsing.CipFiles
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using Fibula.Parsing.CipFiles.Enumerations;
     using Fibula.Parsing.CipFiles.Models;
     using Fibula.Parsing.Contracts;
@@ -218,7 +219,12 @@ namespace Fibula.Parsing.CipFiles
         /// <summary>
         /// Parses multiple arguments.
         /// </summary>
-        public static readonly Parser<IEnumerable<string>> Arguments = Argument.Or(ParenthesizedTupleArgument).Or(BracketedTupleArgument).DelimitedBy(Comma);
+        public static readonly Parser<IEnumerable<string>> Arguments =
+            Argument
+                .Or(ParenthesizedTupleArgument)
+                .Or(BracketedTupleArgument)
+                .Or(MonsterOutfitSerialized)
+                .DelimitedBy(Comma);
 
         /// <summary>
         /// Parses a Key/Value pair in the form: key=value.
@@ -259,7 +265,7 @@ namespace Fibula.Parsing.CipFiles
             select new CipMonsterSpellCastCondition()
             {
                 Type = Enum.Parse<CipMonsterSpellCastType>(castType, true),
-                Values = values.Select(v => Convert.ToUInt32(v)).ToArray(),
+                Values = values.Select(v => Convert.ToInt64(v)).ToArray(),
             };
 
         /// <summary>
@@ -271,7 +277,12 @@ namespace Fibula.Parsing.CipFiles
             select new CipMonsterSpellEffect()
             {
                 Type = Enum.Parse<CipMonsterSpellEffectType>(castType, true),
-                Values = values.Select(v => Convert.ToUInt32(v)).ToArray(),
+                Values = values.Where(v => long.TryParse(v, out long _))
+                               .Select(v => Convert.ToInt64(v))
+                               .ToArray(),
+                ChangeToOutfit = values.Where(v => !long.TryParse(v, out long _))
+                                       .Select(v => JsonSerializer.Deserialize<CipOutfit>(v))
+                                       .FirstOrDefault(),
             };
 
         /// <summary>
@@ -292,7 +303,7 @@ namespace Fibula.Parsing.CipFiles
         /// <summary>
         /// The outfit lookType for the normal outfit.
         /// </summary>
-        public static readonly Parser<(ushort lookTypeId, byte headColor, byte bodyColor, byte legsColor, byte feetColor)> Outfit =
+        public static readonly Parser<CipOutfit> Outfit =
             from looktypeStr in Parse.Number
             from comma in Comma
             from mws in Parse.WhiteSpace.Optional().Many()
@@ -303,26 +314,42 @@ namespace Fibula.Parsing.CipFiles
             from legsColorStr in Parse.Number
             from d2 in Dash
             from feetColorStr in Parse.Number
-            select (Convert.ToUInt16(looktypeStr), Convert.ToByte(headColorStr), Convert.ToByte(bodyColorStr), Convert.ToByte(legsColorStr), Convert.ToByte(feetColorStr));
+            select new CipOutfit()
+            {
+                Type = Convert.ToByte(headColorStr) + Convert.ToByte(bodyColorStr) + Convert.ToByte(legsColorStr) + Convert.ToByte(feetColorStr) == 0 ?
+                       (Convert.ToUInt16(looktypeStr) == 0 ? CipOutfitType.Invisible : CipOutfitType.Race) : CipOutfitType.Outfit,
+                Id = Convert.ToUInt16(looktypeStr),
+                Head = Convert.ToByte(headColorStr),
+                Body = Convert.ToByte(bodyColorStr),
+                Legs = Convert.ToByte(legsColorStr),
+                Feet = Convert.ToByte(feetColorStr),
+            };
 
         /// <summary>
         /// The outfit lookType for the invisible outfit.
         /// </summary>
-        public static readonly Parser<(ushort lookTypeId, byte headColor, byte bodyColor, byte legsColor, byte feetColor)> OutfitInvisible =
+        public static readonly Parser<CipOutfit> OutfitInvisible =
             from firstZero in Zero
             from comma in Comma
             from mws in Parse.WhiteSpace.Optional().Many()
             from secondZero in Zero
-            select (ushort.MinValue, byte.MinValue, byte.MinValue, byte.MinValue, byte.MinValue);
+            select new CipOutfit() { Type = CipOutfitType.Invisible };
 
         /// <summary>
         /// Parses a monster outfit.
         /// </summary>
-        public static readonly Parser<(ushort lookTypeId, byte headColor, byte bodyColor, byte legsColor, byte feetColor)> MonsterOutfit =
+        public static readonly Parser<CipOutfit> MonsterOutfit =
             from open in OpenParenthesis
             from outfit in OutfitInvisible.Or(Outfit)
             from close in CloseParenthesis
             select outfit;
+
+        /// <summary>
+        /// Parses a monster outfit but serializes it into a string.
+        /// </summary>
+        public static readonly Parser<string> MonsterOutfitSerialized =
+            from monsterOutfit in MonsterOutfit
+            select JsonSerializer.Serialize(monsterOutfit);
 
         /// <summary>
         /// Parses monster spells.

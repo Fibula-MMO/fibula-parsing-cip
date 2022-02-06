@@ -144,15 +144,7 @@ namespace Fibula.Parsing.CipFiles
                         monsterModel.Article = value;
                         break;
                     case "outfit":
-                        var (lookTypeId, headColor, bodyColor, legsColor, feetColor) = CipFileParser.ParseMonsterOutfit(value);
-
-                        monsterModel.Outfit = new CipOutfit()
-                        {
-                            Type = lookTypeId == 0 ? CipOutfitType.Invisible :
-                                   headColor + bodyColor + legsColor + feetColor == 0 ? CipOutfitType.Race :
-                                   CipOutfitType.Outfit,
-                            Values = new int[] { lookTypeId, headColor, bodyColor, legsColor, feetColor },
-                        };
+                        monsterModel.Outfit = CipFileParser.ParseMonsterOutfit(value);
                         break;
                     case "corpse":
                         monsterModel.Corpse = Convert.ToUInt16(value);
@@ -235,7 +227,7 @@ namespace Fibula.Parsing.CipFiles
         /// </summary>
         /// <param name="outfitStr">The string to parse.</param>
         /// <returns>A tuple containing the monster outfit values.</returns>
-        public static (ushort lookTypeId, byte headColor, byte bodyColor, byte legsColor, byte feetColor) ParseMonsterOutfit(string outfitStr)
+        public static CipOutfit ParseMonsterOutfit(string outfitStr)
         {
             return CipGrammar.MonsterOutfit.Parse(outfitStr);
         }
