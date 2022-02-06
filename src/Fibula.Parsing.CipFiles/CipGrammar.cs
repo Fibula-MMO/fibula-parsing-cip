@@ -414,14 +414,14 @@ namespace Fibula.Parsing.CipFiles
         /// <summary>
         /// Parses monster skill entries, in the form (skillName, currentLevel, minimumLevel, maximumLevel, currentCount, countForNextLevel, addOnLevel).
         /// </summary>
-        public static readonly Parser<(string, ushort, ushort, ushort, uint, uint, byte)> MonsterSkillEntry =
+        public static readonly Parser<(string, uint, uint, uint, uint, uint, byte)> MonsterSkillEntry =
             from open in OpenParenthesis
             from content in OneOrMoreArguments
             from close in CloseParenthesis
             select (content.ElementAt(0),
-                Convert.ToUInt16(content.ElementAt(1)),
-                Convert.ToUInt16(content.ElementAt(2)),
-                Convert.ToUInt16(content.ElementAt(3)),
+                Convert.ToUInt32(content.ElementAt(1)),
+                Convert.ToUInt32(content.ElementAt(2)),
+                Convert.ToUInt32(content.ElementAt(3)),
                 Convert.ToUInt32(content.ElementAt(4)),
                 Convert.ToUInt32(content.ElementAt(5)),
                 Convert.ToByte(content.ElementAt(6)));
@@ -429,7 +429,7 @@ namespace Fibula.Parsing.CipFiles
         /// <summary>
         /// Parses a monster's skills.
         /// </summary>
-        public static readonly Parser<IEnumerable<(string, ushort, ushort, ushort, uint, uint, byte)>> MonsterSkills =
+        public static readonly Parser<IEnumerable<(string, uint, uint, uint, uint, uint, byte)>> MonsterSkills =
             from open in OpenCurly
             from skillEntries in MonsterSkillEntry.DelimitedBy(Comma)
             from close in CloseCurly

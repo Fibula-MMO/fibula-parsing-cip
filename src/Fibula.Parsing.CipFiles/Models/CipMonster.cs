@@ -26,7 +26,7 @@ namespace Fibula.Parsing.CipFiles.Models
         public CipMonster()
         {
             this.Flags = new List<CipCreatureFlag>();
-            this.Skills = new List<(string Name, ushort DefaultLevel, ushort CurrentLevel, ushort MaximumLevel, uint TargetCount, uint CountIncreaseFactor, byte IncreaserPerLevel)>();
+            this.Skills = new List<(string Name, uint DefaultLevel, uint CurrentLevel, uint MaximumLevel, uint TargetCount, uint CountIncreaseFactor, byte IncreaserPerLevel)>();
             this.Spells = new List<(CipMonsterSpellCastCondition condition, CipMonsterSpellEffect effect, byte chance)>();
             this.Inventory = new List<(ushort typeId, byte maxAmount, ushort dropChance)>();
             this.Phrases = new List<string>();
@@ -115,7 +115,7 @@ namespace Fibula.Parsing.CipFiles.Models
         /// <summary>
         /// Gets or sets the monster's skills.
         /// </summary>
-        public IList<(string Name, ushort DefaultLevel, ushort CurrentLevel, ushort MaximumLevel, uint TargetCount, uint CountIncreaseFactor, byte IncreaserPerLevel)> Skills { get; set; }
+        public IList<(string Name, uint DefaultLevel, uint CurrentLevel, uint MaximumLevel, uint TargetCount, uint CountIncreaseFactor, byte IncreaserPerLevel)> Skills { get; set; }
 
         /// <summary>
         /// Gets or sets the monster's spells.

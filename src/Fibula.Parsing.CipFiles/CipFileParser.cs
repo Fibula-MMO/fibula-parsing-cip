@@ -257,7 +257,7 @@ namespace Fibula.Parsing.CipFiles
         /// </summary>
         /// <param name="skillsStr">The string to parse.</param>
         /// <returns>A collection of tuples containing the skills information.</returns>
-        public static IEnumerable<(string, ushort, ushort, ushort, uint, uint, byte)> ParseMonsterSkills(string skillsStr)
+        public static IEnumerable<(string, uint, uint, uint, uint, uint, byte)> ParseMonsterSkills(string skillsStr)
         {
             return CipGrammar.MonsterSkills.Parse(skillsStr);
         }
