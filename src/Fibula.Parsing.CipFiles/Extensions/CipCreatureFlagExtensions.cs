@@ -29,8 +29,8 @@ namespace Fibula.Parsing.CipFiles.Extensions
             return cipFlag switch
             {
                 CipCreatureFlag.Unpushable => CreatureFlag.CannotBePushed,
-                CipCreatureFlag.KickBoxes => CreatureFlag.CannotBePushed,
-                CipCreatureFlag.KickCreatures => CreatureFlag.CannotBePushed,
+                CipCreatureFlag.KickBoxes => CreatureFlag.CanPushItems,
+                CipCreatureFlag.KickCreatures => CreatureFlag.CanPushCreatures,
                 CipCreatureFlag.NoHit => CreatureFlag.CannotBeTargetted,
                 CipCreatureFlag.DistanceFighting => CreatureFlag.KeepsDistance,
                 _ => null,
