@@ -41,6 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Fixtures\monster_example2.mon">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Fixtures\monster_example.mon">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

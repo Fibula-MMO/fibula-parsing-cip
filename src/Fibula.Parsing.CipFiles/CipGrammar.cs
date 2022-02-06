@@ -224,11 +224,29 @@ namespace Fibula.Parsing.CipFiles
             };
 
         /// <summary>
+        /// The outfit lookType for the item look-a-like outfit.
+        /// </summary>
+        public static readonly Parser<CipOutfit> OutfitItem =
+            from firstZero in Zero
+            from comma in Comma
+            from mws in Parse.WhiteSpace.Optional().Many()
+            from number in Parse.Number
+            select new CipOutfit()
+            {
+                Type = CipOutfitType.Item,
+                Id = Convert.ToUInt16(number),
+                Head = byte.MinValue,
+                Body = byte.MinValue,
+                Legs = byte.MinValue,
+                Feet = byte.MinValue,
+            };
+
+        /// <summary>
         /// Parses a monster outfit.
         /// </summary>
         public static readonly Parser<CipOutfit> MonsterOutfit =
             from open in OpenParenthesis
-            from outfit in OutfitInvisible.Or(Outfit)
+            from outfit in OutfitInvisible.Or(OutfitItem).Or(Outfit)
             from close in CloseParenthesis
             select outfit;
 
@@ -451,6 +469,6 @@ namespace Fibula.Parsing.CipFiles
             from open in OpenCurly
             from phrases in QuotedMessage.DelimitedBy(Comma)
             from close in CloseCurly
-            select phrases;
+            select phrases.Select(p => p.Trim('"'));
     }
 }
