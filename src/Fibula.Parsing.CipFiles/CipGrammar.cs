@@ -437,11 +437,11 @@ namespace Fibula.Parsing.CipFiles
             from content in OneOrMoreArguments
             from close in CloseParenthesis
             select (content.ElementAt(0),
-                Convert.ToUInt32(content.ElementAt(1)),
-                Convert.ToUInt32(content.ElementAt(2)),
-                Convert.ToUInt32(content.ElementAt(3)),
-                Convert.ToUInt32(content.ElementAt(4)),
-                Convert.ToUInt32(content.ElementAt(5)),
+                Convert.ToUInt32(Math.Max(0, long.Parse(content.ElementAt(1)))),
+                Convert.ToUInt32(Math.Max(0, long.Parse(content.ElementAt(2)))),
+                Convert.ToUInt32(Math.Max(0, long.Parse(content.ElementAt(3)))),
+                Convert.ToUInt32(Math.Max(0, long.Parse(content.ElementAt(4)))),
+                Convert.ToUInt32(Math.Max(0, long.Parse(content.ElementAt(5)))),
                 Convert.ToByte(content.ElementAt(6)));
 
         /// <summary>
