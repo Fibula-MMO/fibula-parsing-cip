@@ -138,10 +138,10 @@ namespace Fibula.Parsing.CipFiles
                         monsterModel.RaceId = Convert.ToUInt32(value);
                         break;
                     case "name":
-                        monsterModel.Name = value;
+                        monsterModel.Name = value.Trim('"');
                         break;
                     case "article":
-                        monsterModel.Article = value;
+                        monsterModel.Article = value.Trim('"');
                         break;
                     case "outfit":
                         monsterModel.Outfit = CipFileParser.ParseMonsterOutfit(value);
