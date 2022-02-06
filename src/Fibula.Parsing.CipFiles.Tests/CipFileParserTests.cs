@@ -48,9 +48,9 @@ namespace Fibula.Parsing.CipFiles.Tests
             Assert.AreEqual(0, parsedModel.Strategy.Strongest);
             Assert.AreEqual(0, parsedModel.Strategy.Random);
 
-            Assert.AreEqual(3200, parsedModel.Skills.Single(s => s.Name == "HitPoints").DefaultLevel);
-            Assert.AreEqual(75, parsedModel.Skills.Single(s => s.Name == "GoStrength").DefaultLevel);
-            Assert.AreEqual(900, parsedModel.Skills.Single(s => s.Name == "CarryStrength").DefaultLevel);
+            Assert.AreEqual(3200u, parsedModel.Skills.Single(s => s.Name == "HitPoints").DefaultLevel);
+            Assert.AreEqual(75u, parsedModel.Skills.Single(s => s.Name == "GoStrength").DefaultLevel);
+            Assert.AreEqual(900u, parsedModel.Skills.Single(s => s.Name == "CarryStrength").DefaultLevel);
         }
     }
 }
